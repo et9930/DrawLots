@@ -88,11 +88,15 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: 准备 Android SDK
-        uses: android-actions/setup-android@v3
-
+      # runner 已预装 Android SDK 与 cmdline-tools，不再用 setup-android（它在这些镜像上常装 cmdline-tools 失败）
       - name: 安装 SDK 平台与构建工具
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+        run: |
+          SDKMANAGER="$(command -v sdkmanager || true)"
+          if [ -z "$SDKMANAGER" ]; then
+            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          fi
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
 
       - name: 赋可执行权限
         run: chmod +x gradlew
