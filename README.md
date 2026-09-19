@@ -258,6 +258,21 @@ $env:JAVA_HOME = '<JDK>'
 
 ---
 
+## SAEP 支持
+
+本应用内置 **SAEP（Screen Automation Execution Protocol，屏幕自动化执行协议）** 静态策略，
+向系统声明「屏幕自动化可以对这个应用做什么」。
+
+- 策略文件：`app/src/main/res/raw/agent_saep_policy.json`（schema `AGRP-Policy/1.0`，不超过 10 KiB）
+- 声明方式：`AndroidManifest.xml` 里的 metadata `com.obric.agentrobots.POLICY_JSON` 指向该资源
+- 当前策略：**全部允许**（`global_disable` / `screenshot_disable` / `input_disable` 与四类 Agent intent 都是 `false`），
+  也就是不限制助手操作，方便语音助手/手机助手代为抽签
+- 生效条件：需要支持 SAEP 的系统（ObricUI 2.2+）与 `com.obric.agentrobots.provider`；
+  普通安卓设备会忽略这份策略，应用功能不受任何影响
+- 参考实现：字节跳动开源示例 [bytedance/SAEP-demo](https://github.com/bytedance/SAEP-demo)（Apache-2.0）
+
+---
+
 ## 许可证
 
 本项目采用 [MIT 许可证](LICENSE)：可自由使用、修改、分发，包括商用，只需保留版权与许可声明。

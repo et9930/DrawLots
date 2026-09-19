@@ -275,6 +275,21 @@ not upload them back.
 
 ---
 
+## SAEP support
+
+The app ships a **SAEP (Screen Automation Execution Protocol)** static policy that tells the system
+what screen automation is allowed to do with this app.
+
+- Policy file: `app/src/main/res/raw/agent_saep_policy.json` (schema `AGRP-Policy/1.0`, at most 10 KiB)
+- Declared via the `com.obric.agentrobots.POLICY_JSON` metadata entry in `AndroidManifest.xml`
+- Current policy: **fully permissive** (all of `global_disable` / `screenshot_disable` / `input_disable`
+  and the four agent intents are `false`), so assistants are free to operate the app
+- Requirements: a system that supports SAEP (ObricUI 2.2+) and the `com.obric.agentrobots.provider`;
+  on regular Android devices the policy is simply ignored and nothing else changes
+- Reference implementation: ByteDance's open-source demo [bytedance/SAEP-demo](https://github.com/bytedance/SAEP-demo) (Apache-2.0)
+
+---
+
 ## License
 
 This project is released under the [MIT licence](LICENSE): you are free to use, modify and distribute it,
