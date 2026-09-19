@@ -67,6 +67,14 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- SAEP（Screen Automation Execution Protocol）静态策略：
+             按官方规范用 metadata 指向 res/raw/agent_saep_policy.json（AGRP-Policy/1.0，≤10KiB）。
+             运行时另需 ObricUI 2.2+ 的 android.security.obric.* Stub 与
+             com.obric.agentrobots.provider 才生效；不支持时系统会忽略它。 -->
+        <meta-data
+            android:name="com.obric.agentrobots.POLICY_JSON"
+            android:resource="@raw/agent_saep_policy" />
     </application>
 
 </manifest>
