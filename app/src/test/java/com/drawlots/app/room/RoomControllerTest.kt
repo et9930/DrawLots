@@ -293,6 +293,18 @@ class RoomControllerTest {
     }
 
     @Test
+    fun blankNameFallsBackToTheDefaultNameWhenHosting() = runBlocking {
+        val f = fixture(myName = "小明")
+
+        // 输入框允许清空（上面的用例），但开场/署名不能是空串
+        f.controller.setMyName("")
+        val result = f.controller.hostRoom(RoomHostRequest(roomName = "周五抽签"))
+
+        assertTrue(result is RoomActionResult.Ok)
+        assertEquals("空名开场时回落默认名", "小明", f.controller.roomInfo.value?.hostName)
+    }
+
+    @Test
     fun notHostingTwiceAndNotJoiningWhileInARoom() = runBlocking {
         val f = fixture()
         f.controller.hostRoom(RoomHostRequest(roomName = "周五抽签"))
