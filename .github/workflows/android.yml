@@ -1,9 +1,10 @@
 name: Android CI
 
 on:
+  # 只在打版本 tag 时触发（推 main 不再跑，省额度、也避免每次提交都排队）
   push:
-    branches: [ main ]
     tags: [ 'v*' ]
+  # 提 PR 到 main 时仍会校验；不需要的话删掉这三行即可
   pull_request:
     branches: [ main ]
   workflow_dispatch:
