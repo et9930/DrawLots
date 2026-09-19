@@ -1,6 +1,8 @@
 package com.drawlots.app.ui
 
+import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.drawlots.app.AppViewModel
 import com.drawlots.app.LotUi
 import com.drawlots.app.R
@@ -87,7 +90,11 @@ fun PoolScreen(
         if (uris.isNotEmpty()) viewModel.addGalleryImages(uris)
     }
 
-    // 系统相机：拍照写入 FileProvider 提供的临时文件，同样不需要相机权限。
+    // 系统相机：拍照写入 FileProvider 提供的临时文件。
+    //
+    // 注意：清单里声明了 CAMERA（扫码页用 CameraX 需要它）。按 Android 的规则，
+    // **只要应用声明了 CAMERA 权限，ACTION_IMAGE_CAPTURE 就要求该权限已授予**，
+    // 否则会抛异常——真机表现就是「点拍照提示无法启动相机」。
     val takePicture = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture(),
     ) { success ->
@@ -95,6 +102,34 @@ fun PoolScreen(
         pendingCameraFile = null
         if (file == null) return@rememberLauncherForActivityResult
         if (success) viewModel.addCameraImage(file) else file.delete()
+    }
+
+    /** 真正拉起相机拍照（权限已确保）。 */
+    fun startCameraCapture() {
+        val file = ImageStore.newCameraFile(context)
+        try {
+            pendingCameraFile = file
+            takePicture.launch(ImageStore.uriFor(context, file))
+        } catch (e: ActivityNotFoundException) {
+            pendingCameraFile = null
+            file.delete()
+            viewModel.showMessage("没有找到可用的相机应用")
+        } catch (e: Exception) {
+            pendingCameraFile = null
+            file.delete()
+            viewModel.showMessage("无法启动相机")
+        }
+    }
+
+    /** 先确认相机权限再拍照；被拒时给出可走的路。 */
+    val cameraPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            startCameraCapture()
+        } else {
+            viewModel.showMessage("拍照需要相机权限，可在系统设置里授予，或改用「图库」选图")
+        }
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -136,18 +171,12 @@ fun PoolScreen(
                         icon = painterResource(R.drawable.ic_camera),
                         text = "拍照",
                         onClick = {
-                            val file = ImageStore.newCameraFile(context)
-                            try {
-                                pendingCameraFile = file
-                                takePicture.launch(ImageStore.uriFor(context, file))
-                            } catch (e: ActivityNotFoundException) {
-                                pendingCameraFile = null
-                                file.delete()
-                                viewModel.showMessage("没有找到可用的相机应用")
-                            } catch (e: Exception) {
-                                pendingCameraFile = null
-                                file.delete()
-                                viewModel.showMessage("无法启动相机")
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                                PackageManager.PERMISSION_GRANTED
+                            ) {
+                                startCameraCapture()
+                            } else {
+                                cameraPermission.launch(Manifest.permission.CAMERA)
                             }
                         },
                         modifier = Modifier.weight(1f),
