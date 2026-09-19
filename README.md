@@ -1,5 +1,10 @@
 # 抓阄抽签 (DrawLots)
 
+[![Android CI](https://github.com/et9930/DrawLots/actions/workflows/android.yml/badge.svg)](https://github.com/et9930/DrawLots/actions/workflows/android.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Android](https://img.shields.io/badge/Android-7.0%2B%20(API%2024)-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+
 一个用于**抓阄 / 抽签**的安卓 App：签可以是文字，也可以是图片（相册选图或直接拍照），每个签都能设置数量；
 抽出的签按顺序排列；可以选「放回」或「不放回」。
 
