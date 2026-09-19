@@ -107,7 +107,7 @@ fun RoomSheet(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    text = "抽出的签会自动署名这个名称",
+                    text = "抽出的签会自动署名这个名称；留空则用设备名",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

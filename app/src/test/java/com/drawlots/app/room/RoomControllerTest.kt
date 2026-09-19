@@ -285,9 +285,11 @@ class RoomControllerTest {
         assertEquals("这是一个非常长的名字超过", f.controller.myName.value)
         assertEquals(listOf("这是一个非常长的名字超过"), f.names)
 
-        // 空白名字不生效
+        // 允许清空：删到空时状态必须跟着更新，否则输入框会弹回原值（真机表现为「最后一个字删不掉」）。
+        // 署名/进房另有 effectiveName 回落默认名（见 RoomController.effectiveName）。
         f.controller.setMyName("   ")
-        assertEquals("这是一个非常长的名字超过", f.controller.myName.value)
+        assertEquals("清空后状态应为空串", "", f.controller.myName.value)
+        assertEquals("空串也要落盘", "", f.names.last())
     }
 
     @Test

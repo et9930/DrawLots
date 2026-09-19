@@ -78,7 +78,7 @@ class RoomController(
     private val transportFactory: (RoomTransportKind) -> RoomTransport,
     private val hostAddressProvider: () -> String?,
     private val deviceId: String,
-    initialName: String,
+    private val initialName: String,
     private val onNameChanged: (String) -> Unit = {},
     private val onSessionChanged: () -> Unit,
     private val now: () -> Long = System::currentTimeMillis,
@@ -97,6 +97,12 @@ class RoomController(
     private val _myName = MutableStateFlow(initialName)
     val myName: StateFlow<String> = _myName.asStateFlow()
 
+    /**
+     * 真正用于署名/进房的名字：输入框允许为空，但签名不能是空白，
+     * 因此为空时回落到设备默认名。
+     */
+    private val effectiveName: String get() = _myName.value.ifBlank { initialName }
+
     private var host: RoomHost? = null
     private var client: RoomClient? = null
     private var transport: RoomTransport? = null
@@ -112,7 +118,10 @@ class RoomController(
     private var discoveryJob: Job? = null
 
     fun setMyName(name: String) {
-        val trimmed = name.trim().take(RoomLimits.MAX_NAME_LENGTH).ifBlank { return }
+        // 允许临时为空：删掉最后一个字符时不能把这次修改拦回去，
+        // 否则输入框会弹回原值，用户感觉「最后一个字删不掉」。
+        // 真正要署名/进房时用 effectiveName 兜底。
+        val trimmed = name.trim().take(RoomLimits.MAX_NAME_LENGTH)
         _myName.value = trimmed
         onNameChanged(trimmed)
     }
@@ -133,7 +142,7 @@ class RoomController(
             transport = transport,
             config = RoomConfig(
                 roomName = request.roomName.trim().ifBlank { "抽签房间" },
-                hostName = _myName.value,
+                hostName = effectiveName,
                 allowRecover = request.allowRecover,
                 allowEdit = request.allowEdit,
             ),
@@ -167,7 +176,7 @@ class RoomController(
                                 roomName = host.config.roomName,
                                 roomCode = roomCode,
                                 port = endpoint.port,
-                                hostName = _myName.value,
+                                hostName = effectiveName,
                                 revision = host.revision,
                             )
                         },
@@ -195,7 +204,7 @@ class RoomController(
         val info = RoomInfo(
             roomName = host.config.roomName,
             roomCode = roomCode,
-            hostName = _myName.value,
+            hostName = effectiveName,
             kind = request.kind,
             members = host.members.value,
             allowRecover = request.allowRecover,
@@ -223,7 +232,7 @@ class RoomController(
             transport = transport,
             scope = scope,
             deviceId = deviceId,
-            name = _myName.value,
+            name = effectiveName,
             now = now,
         )
 
