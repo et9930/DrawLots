@@ -38,9 +38,9 @@ fun semverToCode(name: String): Int {
 
 val gradleVersionName = (findProperty("versionName") as String?)?.takeIf { it.isNotBlank() }
 val ciTagName = System.getenv("GITHUB_REF_NAME")?.takeIf { it.startsWith("v") }
-val resolvedVersionName: String = gradleVersionName
+val resolvedVersionName: String = (gradleVersionName
     ?: ciTagName?.removePrefix("v")
-    ?: "1.0.1"
+    ?: "1.0.1").removePrefix("v")
 val resolvedVersionCode: Int = (findProperty("versionCode") as String?)?.toIntOrNull()
     ?: if (gradleVersionName != null || ciTagName != null) semverToCode(resolvedVersionName) else 2
 
