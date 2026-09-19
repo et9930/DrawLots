@@ -53,6 +53,7 @@ import com.drawlots.app.ui.components.RemoteImageResolver
 import com.drawlots.app.ui.room.BluetoothPermissions
 import com.drawlots.app.ui.room.QrScannerScreen
 import com.drawlots.app.ui.room.RoomBanner
+import com.drawlots.app.ui.saep.SaepDialog
 import com.drawlots.app.ui.room.RoomLobby
 import com.drawlots.app.ui.room.RoomSheet
 import androidx.compose.foundation.background
@@ -78,6 +79,7 @@ fun DrawLotsApp(viewModel: AppViewModel = viewModel()) {
     var showRoomSheet by remember { mutableStateOf(false) }
     var showLobby by remember { mutableStateOf(false) }
     var showScanner by remember { mutableStateOf(false) }
+    var showSaep by remember { mutableStateOf(false) }
     var roomBusy by remember { mutableStateOf(false) }
     var pendingBluetoothAction by remember { mutableStateOf<(() -> Unit)?>(null) }
 
@@ -175,6 +177,7 @@ fun DrawLotsApp(viewModel: AppViewModel = viewModel()) {
                         // 在房间里就打开房间详情（二维码/房间码/成员），否则打开建房/加入面板
                         if (role == RoomRole.Offline) showRoomSheet = true else showLobby = true
                     },
+                    onOpenSaep = { showSaep = true },
                 )
                 if (role != RoomRole.Offline) {
                     RoomBanner(
@@ -200,6 +203,10 @@ fun DrawLotsApp(viewModel: AppViewModel = viewModel()) {
                 }
             }
         }
+            // SAEP 面板：静态策略 + 运行时接口调用结果
+            if (showSaep) {
+                SaepDialog(onDismiss = { showSaep = false })
+            }
             // 扫码页覆盖整屏（相机预览需要自己在 Activity 窗口里，不能套在 Dialog 里）
             if (showScanner) {
                 QrScannerScreen(
@@ -297,6 +304,7 @@ private fun AppHeader(
     summary: String,
     roomActive: Boolean,
     onOpenRoom: () -> Unit,
+    onOpenSaep: () -> Unit,
 ) {
     Surface(color = MaterialTheme.colorScheme.primary, modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -338,6 +346,22 @@ private fun AppHeader(
                 Spacer(Modifier.width(6.dp))
                 Text(
                     text = if (roomActive) "房间" else "联机",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+            Spacer(Modifier.width(6.dp))
+            // SAEP：屏幕自动化执行协议的保护策略与运行时接口
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.14f))
+                    .clickable(onClick = onOpenSaep)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "SAEP",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
