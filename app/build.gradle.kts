@@ -18,6 +18,32 @@ val keystoreProperties = Properties().apply {
     }
 }
 
+/**
+ * 版本号来源（优先级从高到低）：
+ *  1. Gradle 属性：`-PversionName=1.0.2`（可选 `-PversionCode=12345` 覆盖自动值）
+ *  2. CI 环境变量：`GITHUB_REF_NAME`（打 tag 触发时就是 `v1.0.2`）
+ *  3. 下面的默认值（本地日常构建）
+ *
+ * `versionCode` 默认由语义化版本自动算出（major*10000 + minor*100 + patch），
+ * 保证单调递增——Android 用它判断能否覆盖升级，绝不能忘记手动加。
+ */
+fun semverToCode(name: String): Int {
+    val core = name.substringBefore('-').removePrefix("v")
+    val parts = core.split('.')
+    val major = parts.getOrNull(0)?.toIntOrNull() ?: 0
+    val minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+    val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
+    return major * 10_000 + minor * 100 + patch
+}
+
+val gradleVersionName = (findProperty("versionName") as String?)?.takeIf { it.isNotBlank() }
+val ciTagName = System.getenv("GITHUB_REF_NAME")?.takeIf { it.startsWith("v") }
+val resolvedVersionName: String = gradleVersionName
+    ?: ciTagName?.removePrefix("v")
+    ?: "1.0.1"
+val resolvedVersionCode: Int = (findProperty("versionCode") as String?)?.toIntOrNull()
+    ?: if (gradleVersionName != null || ciTagName != null) semverToCode(resolvedVersionName) else 2
+
 android {
     namespace = "com.drawlots.app"
     compileSdk = 36
@@ -27,8 +53,8 @@ android {
         applicationId = "com.drawlots.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = resolvedVersionCode
+        versionName = resolvedVersionName
     }
 
     signingConfigs {

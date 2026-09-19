@@ -127,7 +127,7 @@ jobs:
 
       - name: 打包已签名 Release APK
         if: steps.signing.outputs.enabled == 'true'
-        run: ./gradlew assembleRelease --stacktrace
+        run: ./gradlew assembleRelease -PversionName="${GITHUB_REF_NAME#v}" --stacktrace
 
       - name: 校验签名
         if: steps.signing.outputs.enabled == 'true'
@@ -138,17 +138,25 @@ jobs:
 
       - name: 上传 Release APK
         if: steps.signing.outputs.enabled == 'true'
+        run: |
+          SRC=app/build/outputs/apk/release/app-release.apk
+          NAME="DrawLots-${GITHUB_REF_NAME#v}.apk"
+          cp "$SRC" "$NAME"
+          echo "APK_NAME=$NAME" >> "$GITHUB_ENV"
+          ls -lh "$NAME"
+
+      - name: 上传 Release APK 为产物
+        if: steps.signing.outputs.enabled == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: app-release-signed
-          path: app/build/outputs/apk/release/app-release.apk
+          path: DrawLots-*.apk
 
       - name: 附到 GitHub Release（仅 tag 触发时）
         if: steps.signing.outputs.enabled == 'true' && startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          APK=app/build/outputs/apk/release/app-release.apk
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
-            && gh release upload "$GITHUB_REF_NAME" "$APK" --clobber \
-            || gh release create "$GITHUB_REF_NAME" "$APK" --title "$GITHUB_REF_NAME" --generate-notes
+            && gh release upload "$GITHUB_REF_NAME" "$APK_NAME" --clobber \
+            || gh release create "$GITHUB_REF_NAME" "$APK_NAME" --title "DrawLots ${GITHUB_REF_NAME#v}" --generate-notes
