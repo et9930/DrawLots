@@ -1,5 +1,7 @@
 # 抓阄抽签 (DrawLots)
 
+[**中文**](README.md) | [English](README.en.md)
+
 [![Android CI](https://github.com/et9930/DrawLots/actions/workflows/android.yml/badge.svg)](https://github.com/et9930/DrawLots/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Android](https://img.shields.io/badge/Android-7.0%2B%20(API%2024)-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
@@ -184,7 +186,7 @@ $env:JAVA_HOME = '<JDK>'
   只要界面上有一个文本框，之后所有查询都会卡住。因此备注输入框设计成点「添加备注」才出现
   （默认弹窗里没有文本框，界面测试才能继续跑）；打字与保存由真机验证 + DrawSession 的单元测试覆盖。
 
-### 真机验证（Xiaomi 测试机A / Android 17 / HyperOS）
+### 真机验证（测试机A / Android 17 / HyperOS）
 
 已在真机上实际点过一遍并截图确认：
 
